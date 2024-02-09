@@ -31,9 +31,10 @@ tokens = ( 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'LPAREN', 'RPAREN',
 # Ignored characters
 t_ignore = ' \t'
 
+# Keywords: if, while;  comparisons; identifier
 # Token matching rules are written as regexs
 t_PLUS = r'\+'
-t_MINUS = r'-'
+t_MINUS = r'-'  
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
 t_LPAREN = r'\('
