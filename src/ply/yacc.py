@@ -289,7 +289,7 @@ class LRParser:
 
         # If no lexer was given, we will try to use the lex module
         if not lexer:
-            from .ply import lex
+            import lex # from .py ..
             lexer = lex.lexer
 
         # Set up the lexer and parser objects on pslice
