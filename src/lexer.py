@@ -1,15 +1,20 @@
 from ply.lex import lex
+import sys
 
 # --- Tokenizer
 kwords = { # Need to add looping terms
     'if' : 'IF',
     'elif' : 'ELIF',
-    'el' : 'EL'
+    'el' : 'EL',
+    'while' : 'WHILE',
+    'every' : 'EVERY',
+    'handle' : 'HANDLE',
+    'ex' : 'EX'
 } # ~Kooks~ What a key word
 
 # Token Types
-tokens = ('ADD', 'MINUS', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
-          'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'AND', 'OR', 
+tokens = ('EOF', 'ADD', 'MINUS', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
+          'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
           'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 'ASSIGNED',
           'CHAR', 'NUMBER') + tuple(kwords.values())
 
@@ -23,6 +28,7 @@ tokens = ('ADD', 'MINUS', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
 t_ignore = ' \t'
 
 # Token matching rules are written as regexs
+t_EOF = r'EOF'
 t_ADD = r'\+'
 t_MINUS = r'-'  
 t_MULT = r'\*'
@@ -33,6 +39,7 @@ t_ISNOT = r'~=' # That is not where this ends *radio static*
 t_GREATER = r'>'
 t_LESS = r'<'
 t_EQUALS = r'=\?'
+t_NOT = r'~'
 t_AND = r'&'
 t_OR = r'\|'
 t_LPAREN = r'\('
@@ -68,11 +75,19 @@ lexer = lex() # LUTHOR
 # lexer.input('2 + 3 * 2')
 # lexer.input('abc Hello_World Zzz')
 # lexer.input('x <- 5')
-lexer.input('if (x =? 1) {x <- 5} \n x <- x + 5')
+# lexer.input('if (x =? 1) {x <- 5} \n x <- x + 5')
 # lexer.input('x =? y')
 
-for token in lexer:
-    print(token) # (Token Type, Value, Line Number, Position)
+# Reading command line arguments
+# text = input('Enter your expression >')
+# lexer.input(text)
+
+# Iterates through file, tokenizing each item
+file = sys.stdin.readlines()
+for i in range(len(file)):
+    lexer.input(file[i])
+    for token in lexer:
+        print(token) # (Token Type, Value, Line Number, Position)
 
 # Must also be able to take in a file (EOF)
 # Take in stdin?
