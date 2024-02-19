@@ -16,7 +16,7 @@ kwords = { # Need to add looping terms
 tokens = ('EOF', 'ADD', 'MINUS', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
           'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
           'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 'ASSIGNED',
-          'CHAR', 'NUMBER') + tuple(kwords.values())
+          'CHARCHAR', 'NUMBER') + tuple(kwords.values())
 
 # States for different types of blocks of code
 # states = (
@@ -50,9 +50,9 @@ t_ASSIGNED = r'\<-'
 
 # Our work shall continue to grow **Maniacal Laughter**
 # HEY CHAR Rule for variable names
-def t_CHAR(t):
+def t_CHARCHAR(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
-    t.type = kwords.get(t.value, 'CHAR') # Checks for key words, otherwise Char Char
+    t.type = kwords.get(t.value, 'CHARCHAR') # Checks for key words, otherwise Char Char
     return t
 
 # Number Rule
