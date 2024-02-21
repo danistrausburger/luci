@@ -6,17 +6,18 @@ kwords = { # Need to add looping terms
     'if' : 'IF',
     'elif' : 'ELIF',
     'el' : 'EL',
-    'while' : 'WHILE',
+    'scene' : 'SCENE',
     'every' : 'EVERY',
     'handle' : 'HANDLE',
-    'ex' : 'EX'
+    'ex' : 'EX',
+    'action' : 'ACTION',
+    'cut' : 'CUT'
 } # ~Kooks~ What a key word
 
 # Token Types
-tokens = ('EOF', 'ADD', 'MINUS', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
+tokens = ('EOF', 'ADD', 'SUB', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
           'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
-          'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 'ASSIGNED',
-          'CHARCHAR', 'NUMBER') + tuple(kwords.values())
+          'LPAREN', 'RPAREN', 'ASSIGNED', 'CHARCHAR', 'NUMBER') + tuple(kwords.values())
 
 # States for different types of blocks of code
 # states = (
@@ -28,9 +29,9 @@ tokens = ('EOF', 'ADD', 'MINUS', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
 t_ignore = ' \t'
 
 # Token matching rules are written as regexs
-t_EOF = r'EOF'
+t_EOF = r'EOF' # End of First season
 t_ADD = r'\+'
-t_MINUS = r'-'  
+t_SUB = r'-'  
 t_MULT = r'\*'
 t_DIV = r'/'
 t_GREQUAL = r'>=' # We are qrequals
@@ -41,11 +42,9 @@ t_LESS = r'<'
 t_EQUALS = r'=\?'
 t_NOT = r'~'
 t_AND = r'&'
-t_OR = r'\|'
+t_OR = r'\|' # TOR
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
-t_LBRACE = r'\{'
-t_RBRACE = r'\}'
 t_ASSIGNED = r'\<-'
 
 # Our work shall continue to grow **Maniacal Laughter**
@@ -88,6 +87,3 @@ for i in range(len(file)):
     lexer.input(file[i])
     for token in lexer:
         print(token) # (Token Type, Value, Line Number, Position)
-
-# Must also be able to take in a file (EOF)
-# Take in stdin?

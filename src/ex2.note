@@ -1,0 +1,4 @@
+x <- 0
+scene (x <= 5) action
+x <- x + 1
+cut
