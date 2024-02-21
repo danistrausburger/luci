@@ -8,11 +8,11 @@ To use this program, one must have Python installed on their machine. Everything
 
 To use, simply open a new bash terminal and type the following:
 
-python lexer.py < yourfile
+python lexer.py < ../example/yourfile
 
 Replace "yourfile" with the name of the file you wish to pass into the lexer.
 
-An example file, called ex.note, is provided with the project files.
+An example file, called ex.note, is provided with the project files, in the example file..
 You may have anything in the inputted file, including but not limited to numbers, operators, and characters.
 
 CREDITS
