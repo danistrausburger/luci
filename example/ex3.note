@@ -1,0 +1,9 @@
+x <- 3.3
+y <- 4.6
+z <- 2
+
+if (x =? 3.3 & y =? 2) action
+    z <- 0
+cut el action
+    y <- 2
+cut  

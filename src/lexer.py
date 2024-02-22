@@ -8,16 +8,16 @@ kwords = {
     'el' : 'EL',
     'scene' : 'SCENE',
     'every' : 'EVERY',
-    'handle' : 'HANDLE',
+    'deal' : 'DEAL',
     'ex' : 'EX',
     'action' : 'ACTION',
     'cut' : 'CUT'
 }
-
+# FROM __ TO __ (FOR LOOP)
 # Token Types
 tokens = ('EOF', 'ADD', 'SUB', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
           'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
-          'LPAREN', 'RPAREN', 'ASSIGNED', 'CHARCHAR', 'NUMBER') + tuple(kwords.values())
+          'LPAREN', 'RPAREN', 'ASSIGN', 'CHARCHAR', 'NUMBER') + tuple(kwords.values())
 
 # States for different types of blocks of code
 # states = (
@@ -45,7 +45,7 @@ t_AND = r'&'
 t_OR = r'\|'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
-t_ASSIGNED = r'\<-'
+t_ASSIGN = r'\<-'
 
 # HEY CHAR Rule for variable names
 def t_CHARCHAR(t):
@@ -55,8 +55,11 @@ def t_CHARCHAR(t):
 
 # Number Rule
 def t_NUMBER(t):
-    r'\d+' # 1 or more digits
-    t.value = int(t.value)
+    r'\d+(\.\d+)?' # 1 or more digits/floats
+    if '.' not in t.value:
+        t.value = int(t.value)
+    else:
+        t.value = float(t.value)
     return t
 
 def t_ignore_newline(t):
