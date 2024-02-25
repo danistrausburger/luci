@@ -17,7 +17,7 @@ python lexer.py < ../example/yourfile
 
 Replace "yourfile" with the name of the file you wish to pass into the lexer.
 
-Two example files, an ex.note, and an ex2.note, are provided in the example folder.
+Four example files are provided in the example folder.
 You may have anything in the inputted file, including but not limited to numbers, operators, conditionals, and characters.
 
 CREDITS
