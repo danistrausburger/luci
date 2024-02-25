@@ -1,4 +1,4 @@
-from ply.lex import lex
+from ply.lex import lex, LexToken
 import sys
 
 # --- Tokenizer
@@ -80,3 +80,11 @@ for i in range(len(file)):
     lexer.input(file[i])
     for token in lexer:
         print(token) # (Token Type, Value, Line Number, Position)
+
+# Manually create EOF Token
+eof_token = LexToken()
+eof_token.type = t_EOF
+eof_token.value = None
+eof_token.lineno = lexer.lineno
+eof_token.lexpos = lexer.lexpos # Let's gooooo dude I'm the best
+print(eof_token)
