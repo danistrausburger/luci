@@ -12,11 +12,18 @@ kwords = {
     'deal' : 'DEAL',
     'ex' : 'EX',
     'action' : 'ACTION',
-    'cut' : 'CUT'
+    'cut' : 'CUT',
+    'create' : 'CREATE',
+    'tartarus' : 'TARTARUS',
+    'truth' : 'TRUTH',
+    'lie' : 'LIE',
+    'die' : 'DIE',
+    'retaliate' : 'RETALIATE',
+    'gate' : 'GATE'
 }
 # FROM __ TO __ (FOR LOOP)
 # Token Types
-tokens = ('EOF', 'ADD', 'SUB', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
+tokens = ('EOF', 'INCR', 'DECR', 'ADDEQ', 'SUBEQ', 'MULTEQ', 'DIVEQ', 'ADD', 'SUB', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
           'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
           'LPAREN', 'RPAREN', 'ASSIGN', 'CHARCHAR', 'NUMBER') + tuple(kwords.values())
 
@@ -31,6 +38,12 @@ t_ignore = ' \t'
 
 # Token matching rules are written as regexs
 t_EOF = r'EOF'
+t_INCR = r'\++'
+t_DECR = r'\--'
+t_ADDDEQ = r'\+='
+t_SUBEQ = r'\-='
+t_MULTEQ = r'\*='
+t_DIVEQ = r'/='
 t_ADD = r'\+'
 t_SUB = r'-'  
 t_MULT = r'\*'
