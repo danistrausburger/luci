@@ -21,9 +21,10 @@ kwords = {
     'retaliate' : 'RETALIATE',
     'gate' : 'GATE'
 }
-# FROM __ TO __ (FOR LOOP)
+
 # Token Types
-tokens = ('EOF', 'INCR', 'DECR', 'ADDEQ', 'SUBEQ', 'MULTEQ', 'DIVEQ', 'ADD', 'SUB', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
+tokens = ('EOF', 'INCR', 'DECR', 'ADDEQ', 'SUBEQ', 'MULTEQ', 'DIVEQ', 
+          'ADD', 'SUB', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
           'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
           'LPAREN', 'RPAREN', 'ASSIGN', 'CHARCHAR', 'NUMBER') + tuple(kwords.values())
 
@@ -38,9 +39,9 @@ t_ignore = ' \t'
 
 # Token matching rules are written as regexs
 t_EOF = r'EOF'
-t_INCR = r'\++'
-t_DECR = r'\--'
-t_ADDDEQ = r'\+='
+t_INCR = r'\+\+'
+t_DECR = r'\-\-'
+t_ADDEQ = r'\+='
 t_SUBEQ = r'\-='
 t_MULTEQ = r'\*='
 t_DIVEQ = r'/='
@@ -99,5 +100,5 @@ eof_token = LexToken()
 eof_token.type = t_EOF
 eof_token.value = None
 eof_token.lineno = lexer.lineno
-eof_token.lexpos = lexer.lexpos # Let's gooooo dude I'm the best
+eof_token.lexpos = lexer.lexpos
 print(eof_token)
