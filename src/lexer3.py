@@ -89,15 +89,48 @@ def t_error(t):
 # Build the lexer object
 lexer = lex()
 
+# def p_statement_if(p):
+#     '''
+#     statement : IF LPAREN expression RPAREN ACTION statement CUT
+#              | IF LPAREN expression RPAREN ACTION statement CUT EL ACTION statement CUT
+#     '''
+#     if len(p) == 8:  # Only if, without else
+#         p[0] = ('if:', p[3], p[6])
+#     else:  # if with else
+#         p[0] = ('if_el:', p[3], p[6], p[10])
+
 def p_statement_if(p):
     '''
-    statement : IF LPAREN expression RPAREN ACTION statement CUT
-             | IF LPAREN expression RPAREN ACTION statement CUT EL ACTION statement CUT
+    statement : IF LPAREN expression RPAREN ACTION statement CUT opt_el
     '''
-    if len(p) == 8:  # Only if, without else
-        p[0] = ('if:', p[3], p[6])
-    else:  # if with else
-        p[0] = ('if_el:', p[3], p[6], p[10])
+    if len(p) == 8: # If it's just an if
+        p[0] = ('if', p[3], p[6])
+    else: # If there's an else
+        p[0] = ('if_el', p[3], p[6], p[8])
+    print(p[0])
+
+def p_opt_el(p):
+    '''
+    opt_el : EL ACTION statement CUT
+    '''
+    if len(p) == 5:
+        p[0] = p[3]
+    else:
+        p[0] = None
+
+def p_statement_while(p):
+    '''
+    statement : SCENE LPAREN expression RPAREN ACTION statement CUT
+    '''
+    p[0] = ('scene', p[3], p[6])
+    print(p[0])
+
+def p_statement_for(p):
+    '''
+    statement : FROM LPAREN expression RPAREN TO LPAREN expression RPAREN ACTION statement CUT 
+    '''
+    p[0] = ('from_to', p[3], p[7], p[10])
+    print(p[0])
 
 def p_statement_expr(p):
     '''
