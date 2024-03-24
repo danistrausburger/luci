@@ -98,7 +98,7 @@ precedence = (
 
 chars = {}
 
-def p_statement_assign(p):
+def p_statement_assign(p): # Could be statement or expression
     '''statement : CHARCHAR ASSIGN expression
                  | CHARCHAR INCR
                  | CHARCHAR DECR'''
@@ -109,9 +109,20 @@ def p_statement_assign(p):
     elif p[2] == '--':
         chars[p[1]] = chars[p[1]] - 1
 
+def p_statement_if(p): # Could statement or expression
+    '''statement : IF LPAREN expression RPAREN ACTION statement CUT
+                 | IF LPAREN expression RPAREN ACTION statement CUT EL ACTION statement CUT'''
+    if len(p) == 8:  # Only if, without else
+        ast = ('if', p[3], p[6])
+    else:  # if with else
+        ast = ('if_el', p[3], p[6], p[10])
+    print(ast)
+    p[0] = ast
+
 def p_statement_expr(p):
     'statement : expression'
-    print(p[1]) # TODO: Add a print token !!!
+    p[0] = p[1]
+    print(p[0]) # TODO: Add a print token !!!
 
 def p_expression_binop(p):
     '''expression : expression ADD expression
