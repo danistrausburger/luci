@@ -26,13 +26,12 @@ kwords = {
 # Token Types
 tokens = ('EOF', 'INCR', 'DECR', 'ADDEQ', 'SUBEQ', 'MULTEQ', 'DIVEQ', 
           'ADD', 'SUB', 'MULT', 'DIV', 'GREQUAL', 'LEQUAL',
-          'ISNOT', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
-          'LPAREN', 'RPAREN', 'ASSIGN', 'CHARCHAR', 'NUMBER') + tuple(kwords.values())
+          'ISNOT', 'ASSIGN', 'GREATER', 'LESS', 'EQUALS', 'NOT', 'AND', 'OR', 
+          'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 'CHARCHAR', 'NUMBER', 'ACTION_BLOCK') + tuple(kwords.values())
 
 # States for different types of blocks of code
 # states = (
-#     ('IF_BLOCK', 'exclusive'),
-#     ('WHILE_BLOCK', 'exclusive')
+#     ('action', 'inclusive')
 # )
 
 # Ignored characters
@@ -53,6 +52,7 @@ t_DIV = r'/'
 t_GREQUAL = r'>='
 t_LEQUAL = r'<='
 t_ISNOT = r'~='
+t_ASSIGN = r'\<-'
 t_GREATER = r'>'
 t_LESS = r'<'
 t_EQUALS = r'=' # ??
@@ -61,7 +61,8 @@ t_AND = r'&'
 t_OR = r'\|'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
-t_ASSIGN = r'\<-'
+t_LBRACE = r'{'
+t_RBRACE = r'\}'
 
 # HEY CHAR Rule for variable chars
 def t_CHARCHAR(t):
@@ -81,6 +82,10 @@ def t_NUMBER(t):
     t.value = int(t.value)
     return t
 
+def t_ignore_comment(t):
+    r'\#.*'
+    pass
+
 def t_ignore_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count('\n')
@@ -90,7 +95,7 @@ def t_error(t):
     t.lexer.skip(1)
 
 # Build the lexer object
-lexer = lex()
+#lexer = lex()
 
 # --- Parser
 #   expression : term ADD term
@@ -108,6 +113,7 @@ lexer = lex()
 #              | LPAREN expression RPAREN
 
 precedence = (
+    ('nonassoc', 'LESS', 'GREATER'),  # Nonassociative operators
     ('left', 'ADD', 'SUB'),
     ('left', 'MULT', 'DIV'),
     ('right', 'UNARY')
@@ -123,19 +129,52 @@ def p_statement_expr(p):
     'statement : expression'
     print(p[1])
 
+def p_statement_while(p):
+    '''statement : SCENE LPAREN expression RPAREN LBRACE statement RBRACE'''
+    print(p[3]) # Will always print out Truth because that's what get's returned
+    while p[3]: # How to get the actual expression?
+        p[0] = p[6] 
+        p[3] = p[3]
+
 def p_expression_binop(p):
     '''expression : expression ADD expression
                   | expression SUB expression
                   | expression MULT expression
                   | expression DIV expression'''
     if p[2] == '+':
-        p[0] = p[1] + p[3]
+        p[0] = p[1] + p[3] # Probably going to have change position works to accomodate for additional code
     elif p[2] == '-':
         p[0] = p[1] - p[3]
     elif p[2] == '*':
         p[0] = p[1] * p[3]
     elif p[2] == '/':
         p[0] = p[1] / p[3]
+
+def p_expression_comp(p):
+    '''expression : expression LESS expression
+                  | expression GREATER expression
+                  | expression LEQUAL expression
+                  | expression GREQUAL expression'''
+    if p[2] == '<':
+        if p[1] < p[3]:
+            p[0] = "Truth" # Returns either Truth or Lie
+        else:
+            p[0] = "Lie"
+    elif p[2] == '>':
+        if p[1] > p[3]:
+            p[0] = "Truth"
+        else:
+            p[0] = "Lie"
+    elif p[2] == '<=':
+        if p[1] <= p[3]:
+            p[0] = "Truth"
+        else:
+            p[0] = "Lie"
+    elif p[2] == '>=':
+        if p[1] >= p[3]:
+            p[0] = "Truth"
+        else:
+            p[0] = "Lie"
 
 def p_expression_unary(p):
     "expression : SUB expression %prec UNARY" # %prec - Precedence token
@@ -162,22 +201,8 @@ def p_error(p):
         print("Syntax error at '%s'" % p.value)
     else:
         print("Syntax error at EOF")
-
-# # Iterates through file, tokenizing each item
-# file = sys.stdin.readlines()
-# for i in range(len(file)):
-#     lexer.input(file[i])
-#     for token in lexer:
-#         print(token) # (Token Type, Value, Line Number, Position)
-
-# # Manually create EOF Token
-# eof_token = LexToken()
-# eof_token.type = t_EOF
-# eof_token.value = None
-# eof_token.lineno = lexer.lineno
-# eof_token.lexpos = lexer.lexpos
-# print(eof_token)
     
+lexer = lex()
 parser = yacc.yacc()
 # while True:
 #     ast = parser.parse(input("epxr < "))
