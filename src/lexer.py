@@ -1,5 +1,5 @@
-from ply.lex import lex, LexToken
-import ply.yacc as yacc
+from ply.lex import lex
+from ply.yacc import yacc
 import sys
 
 # --- Tokenizer
@@ -59,7 +59,7 @@ t_RPAREN = r'\)'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
 
-# HEY CHAR Rule for variable names
+# HEY CHAR Rule for variable CHARCHARs
 def t_CHARCHAR(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = kwords.get(t.value, 'CHARCHAR') # Checks for key words, otherwise Char Char
@@ -89,129 +89,187 @@ def t_error(t):
 # Build the lexer object
 lexer = lex()
 
-precedence = (
-    ('nonassoc', 'LESS', 'GREATER', 'LEQUAL', 'GREQUAL'),
-    ('left', 'ADD', 'SUB'),
-    ('left', 'MULT', 'DIV'),
-    ('right', 'UNARY')
-)
+# def p_statement_if(p):
+#     '''
+#     statement : IF LPAREN expression RPAREN ACTION statement CUT
+#              | IF LPAREN expression RPAREN ACTION statement CUT EL ACTION statement CUT
+#     '''
+#     if len(p) == 8:  # Only if, without else
+#         p[0] = ('if:', p[3], p[6])
+#     else:  # if with else
+#         p[0] = ('if_el:', p[3], p[6], p[10])
 
-chars = {}
+def p_statement_if(p):
+    '''
+    statement : IF LPAREN expression RPAREN ACTION statement CUT
+              | IF LPAREN expression RPAREN ACTION statement CUT elif_statements opt_el
+              | IF LPAREN expression RPAREN ACTION statement CUT opt_el
+    '''
+    if len(p) == 8: # If it's just an if
+        p[0] = ('if', p[3], p[6])
+    elif len(p) == 9: # If else
+        p[0] = ('if_el', p[3], p[6], p[8])
+    else: 
+        p[0] = ('if_elif_el', p[3], p[6], p[8], p[9])
 
-def p_statement_assign(p): # Could be statement or expression
-    '''statement : CHARCHAR ASSIGN expression
-                 | CHARCHAR INCR
-                 | CHARCHAR DECR'''
-    if p[2] == '<-':
-        chars[p[1]] = p[3]
-    elif p[2] == '++':
-        chars[p[1]] = chars[p[1]] + 1
-    elif p[2] == '--':
-        chars[p[1]] = chars[p[1]] - 1
+def p_elif_statements(p): # Won't print out elif statements after the first
+    '''
+    elif_statements : elif_statement
+                    | elif_statements elif_statement
+    '''
+    if len(p) == 2: 
+        p[0] = [p[1]]
+    # elif len(p) == 3:
+    #     p[0] = []
+    else:  # Multiple elif statements
+        p[0] = p[1] + [p[2]]
 
-def p_statement_if(p): # Could statement or expression
-    '''statement : IF LPAREN expression RPAREN ACTION statement CUT
-                 | IF LPAREN expression RPAREN ACTION statement CUT EL ACTION statement CUT'''
-    if len(p) == 8:  # Only if, without else
-        ast = ('if', p[3], p[6])
-    else:  # if with else
-        ast = ('if_el', p[3], p[6], p[10])
-    print(ast)
-    p[0] = ast
+def p_elif_statement(p):
+    '''
+    elif_statement : ELIF LPAREN expression RPAREN ACTION expression CUT
+    '''
+    p[0] = ('elif', p[3], p[6])
+
+def p_opt_el(p):
+    '''
+    opt_el : EL ACTION statement CUT
+           |
+    '''
+    if len(p) == 5:
+        p[0] = ('else', p[3])
+    else:
+        p[0] = None
+
+def p_statement_while(p):
+    '''
+    statement : SCENE LPAREN expression RPAREN ACTION statement CUT
+    '''
+    p[0] = ('scene', p[3], p[6])
+
+def p_statement_for(p):
+    '''
+    statement : FROM LPAREN expression RPAREN TO LPAREN expression RPAREN ACTION statement CUT 
+    '''
+    p[0] = ('from_to', p[3], p[7], p[10])
 
 def p_statement_expr(p):
-    'statement : expression'
+    '''
+    statement : expression
+    '''
     p[0] = p[1]
-    print(p[0]) # TODO: Add a print token !!!
 
 def p_expression_binop(p):
-    '''expression : expression ADD expression
-                  | expression SUB expression
-                  | expression MULT expression
-                  | expression DIV expression'''
+    '''
+    expression : expression ADD expression
+               | expression SUB expression
+               | expression MULT expression
+               | expression DIV expression
+               | expression INCR
+               | expression DECR
+    '''
     if p[2] == '+':
-        p[0] = p[1] + p[3]
+        p[0] = ('binop', '+', p[1], p[3])
     elif p[2] == '-':
-        p[0] = p[1] - p[3]
+        p[0] = ('binop', '-', p[1], p[3])
     elif p[2] == '*':
-        p[0] = p[1] * p[3]
+        p[0] = ('binop', '*', p[1], p[3])
     elif p[2] == '/':
-        p[0] = p[1] / p[3]
+        p[0] = ('binop', '/', p[1], p[3])
+    elif p[2] == '++':
+        p[0] = ('unary', '++', p[1])
+    elif p[2] == '--':
+        p[0] = ('unary', '--', p[1])
 
-def p_expression_comp(p):
-    '''expression : expression LESS expression
-                  | expression GREATER expression
-                  | expression LEQUAL expression
-                  | expression GREQUAL expression
-                  | expression EQUALS expression'''
+def p_expression_comparison(p):
+    '''
+    expression : expression LESS expression
+               | expression GREATER expression
+               | expression LEQUAL expression
+               | expression GREQUAL expression
+               | expression EQUALS expression
+               | expression ISNOT expression
+    '''
     if p[2] == '<':
-        if p[1] < p[3]:
-            p[0] = True
-        else:
-            p[0] = False
+        p[0] = ('comparison', '<', p[1], p[3])
     elif p[2] == '>':
-        if p[1] > p[3]:
-            p[0] = True
-        else:
-            p[0] = False
+        p[0] = ('comparison', '>', p[1], p[3])
     elif p[2] == '<=':
-        if p[1] <= p[3]:
-            p[0] = True
-        else:
-            p[0] = False
+        p[0] = ('comparison', '<=', p[1], p[3])
     elif p[2] == '>=':
-        if p[1] >= p[3]:
-            p[0] = True
-        else:
-            p[0] = False
+        p[0] = ('comparison', '>=', p[1], p[3])
     elif p[2] == '=?':
-        if p[1] == p[3]:
-            p[0] = True
+        p[0] = ('comparison', '=?', p[1], p[3])
+    elif p[2] == '~=':
+        p[0] = ('comparison', '~=', p[1], p[3])
+
+def p_expression_assign(p):
+    '''
+    expression : CHARCHAR ASSIGN expression
+    '''
+    p[0] = ('assignment', p[1], p[3])
+
+def p_expression(p):
+    '''
+    expression : term
+               | expression ADD term
+               | expression SUB term
+               | expression MULT term
+               | expression DIV term
+    '''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        if p[2] == '+':
+            p[0] = ('binop', '+', p[1], p[3])
+        elif p[2] == '-':
+            p[0] = ('binop', '-', p[1], p[3])
+        elif p[2] == '*':
+            p[0] = ('binop', '*', p[1], p[3])
+        elif p[2] == '/':
+            p[0] = ('binop', '/', p[1], p[3])
+
+def p_term(p):
+    '''
+    term : factor
+         | term MULT factor
+         | term DIV factor
+    '''
+    if len(p) == 2:
+        p[0] = p[1]
+    elif p[2] == '*':
+        p[0] = ('binop', '*', p[1], p[3])
+    elif p[2] == '/':
+        p[0] = ('binop', '/', p[1], p[3])
+
+def p_factor(p):
+    '''
+    factor : NUMBER
+           | CHARCHAR
+           | LPAREN expression RPAREN
+           | ADD factor
+           | SUB factor
+    '''
+    if len(p) == 2:
+        if isinstance(p[1], float):
+            p[0] = ('number', p[1])
         else:
-            p[0] = False
-
-def p_expression_unary(p):
-    "expression : SUB expression %prec UNARY" # %prec - Precedence token
-    p[0] = -p[2]
-
-def p_expression_group(p):
-    "expression : LPAREN expression RPAREN"
-    p[0] = p[2]
-
-def p_expression_number(p):
-    "expression : NUMBER"
-    p[0] = p[1]
-
-def p_expression_char(p):
-    "expression : CHARCHAR"
-    try:
-        p[0] = chars[p[1]]
-    except LookupError:
-        print("Undefined name '%s'" % p[1])
-        p[0] = 0
+            p[0] = ('CHARCHAR', p[1])
+    elif p[1] == '(':
+        p[0] = ['grouped', p[2]]
+    elif p[1] == '+':
+        p[0] = ('unary', '+', p[2])
+    elif p[1] == '-':
+        p[0] = ('unary', '-', p[2])
 
 def p_error(p):
-    if p:
-        print("Syntax error at '%s'" % p.value)
-    else:
-        print("Syntax error at EOF")
+    print(f'Syntax error at {p.value!r}')
 
-parser = yacc.yacc()
+# Build the parser
+parser = yacc()
 
-# # Iterates through file, tokenizing each item
-# file = sys.stdin.readlines()
-# for i in range(len(file)):
-#     lexer.input(file[i])
-#     for token in lexer:
-#         print(token) # (Token Type, Value, Line Number, Position)
-
-# # Manually create EOF Token
-# eof_token = LexToken()
-# eof_token.type = t_EOF
-# eof_token.value = None
-# eof_token.lineno = lexer.lineno
-# eof_token.lexpos = lexer.lexpos
-# print(eof_token)
+# Parse an expression
+# ast = parser.parse('2 * 3 + 4 * (5 - x)')
+# print(ast)
 
 while True:
     try:
@@ -220,4 +278,5 @@ while True:
         break
     if not s:
         continue
-    yacc.parse(s)
+    ast = parser.parse(s)
+    print(ast)
