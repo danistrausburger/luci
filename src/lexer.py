@@ -151,6 +151,29 @@ def p_statement_for(p):
     statement : FROM LPAREN expression RPAREN TO LPAREN expression RPAREN ACTION statement CUT 
     '''
     p[0] = ('from_to', p[3], p[7], p[10])
+    
+def p_statement_deal(p):
+    '''
+    statement : DEAL LPAREN expression RPAREN ACTION ex_list CUT
+    '''
+    p[0] = ('deal', p[3], p[6])
+    print(p[0])
+
+def p_ex_list(p):
+    '''
+    ex_list : ex_list ex 
+        | ex
+    '''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_ex(p):
+    '''
+    ex : EX expression ACTION statement CUT
+    '''
+    p[0] = ('ex', p[2], p[4])
 
 def p_statement_expr(p):
     '''
