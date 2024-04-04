@@ -89,16 +89,6 @@ def t_error(t):
 # Build the lexer object
 lexer = lex()
 
-# def p_statement_if(p):
-#     '''
-#     statement : IF LPAREN expression RPAREN ACTION statement CUT
-#              | IF LPAREN expression RPAREN ACTION statement CUT EL ACTION statement CUT
-#     '''
-#     if len(p) == 8:  # Only if, without else
-#         p[0] = ('if:', p[3], p[6])
-#     else:  # if with else
-#         p[0] = ('if_el:', p[3], p[6], p[10])
-
 def p_statement_if(p):
     '''
     statement : IF LPAREN expression RPAREN ACTION statement CUT
@@ -311,10 +301,6 @@ def p_error(p):
 # Build the parser
 parser = yacc()
 
-# Parse an expression
-# ast = parser.parse('2 * 3 + 4 * (5 - x)')
-# print(ast)
-
 while True:
     try:
         s = input('expr > ')
@@ -324,5 +310,3 @@ while True:
         continue
     ast = parser.parse(s)
     print(ast)
-
-# TODO: Logic Operators
