@@ -6,9 +6,7 @@ Unused terminals:
     DIE
     EOF
     GATE
-    LBRACE
     LIE
-    RBRACE
     RETALIATE
     TARTARUS
     TRUTH
@@ -88,7 +86,6 @@ GREQUAL              : 25
 IF                   : 1 2 3
 INCR                 : 20
 ISNOT                : 27
-LBRACE               : 
 LEQUAL               : 24
 LESS                 : 22
 LIE                  : 
@@ -97,7 +94,6 @@ MULT                 : 18 37 40
 NOT                  : 30
 NUMBER               : 42
 OR                   : 29
-RBRACE               : 
 RETALIATE            : 
 RPAREN               : 1 2 3 6 9 10 10 11 44
 SCENE                : 9

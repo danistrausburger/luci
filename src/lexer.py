@@ -26,7 +26,7 @@ kwords = {
 # Token Types
 tokens = ('EOF', 'INCR', 'DECR', 'ADD', 'SUB', 'MULT', 'DIV', 
           'GREQUAL', 'LEQUAL', 'ISNOT', 'ASSIGN', 'GREATER', 'LESS', 'EQUALS', 
-          'NOT', 'AND', 'OR', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE',
+          'NOT', 'AND', 'OR', 'LPAREN', 'RPAREN',
           'CHARCHAR', 'SCRIPT', 'NUMBER') + tuple(kwords.values())
 
 # Ignored characters
@@ -296,8 +296,11 @@ def p_factor(p):
         p[0] = ('unary', '-', p[2])
 
 def p_error(p):
-    print(f'Syntax error at {p.value!r}')
-
+    if p:
+        print(f"Syntax error at line {p.lineno}, position {p.lexpos}: Unexpected token '{p.value}'")
+    else:
+        print("Syntax error: Unexpected end of input")
+        
 # Build the parser
 parser = yacc()
 
