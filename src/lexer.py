@@ -27,7 +27,7 @@ kwords = {
 tokens = ('EOF', 'INCR', 'DECR', 'ADD', 'SUB', 'MULT', 'DIV', 
           'GREQUAL', 'LEQUAL', 'ISNOT', 'ASSIGN', 'GREATER', 'LESS', 'EQUALS', 
           'NOT', 'AND', 'OR', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE',
-          'CHARCHAR', 'NUMBER') + tuple(kwords.values())
+          'CHARCHAR', 'SCRIPT', 'NUMBER') + tuple(kwords.values())
 
 # Ignored characters
 t_ignore = ' \t'
@@ -36,10 +36,6 @@ t_ignore = ' \t'
 t_EOF = r'EOF'
 t_INCR = r'\+\+'
 t_DECR = r'\-\-'
-# t_ADDEQ = r'\+='
-# t_SUBEQ = r'\-='
-# t_MULTEQ = r'\*='
-# t_DIVEQ = r'/='
 t_ADD = r'\+'
 t_SUB = r'-'  
 t_MULT = r'\*'
@@ -52,12 +48,16 @@ t_GREATER = r'>'
 t_LESS = r'<'
 t_EQUALS = r'=\?'
 t_NOT = r'~'
-t_AND = r'&'
+t_AND = r'\&'
 t_OR = r'\|'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
-t_LBRACE = r'\{'
-t_RBRACE = r'\}'
+
+# Script rules for strings
+def t_SCRIPT(t):
+    r'\"([^\\"]|\\")*\"'
+    t.value = t.value[1:-1]  # Remove double quotes from the value
+    return t
 
 # HEY CHAR Rule for variable CHARCHARs
 def t_CHARCHAR(t):
@@ -225,9 +225,30 @@ def p_expression_comparison(p):
     elif p[2] == '~=':
         p[0] = ('comparison', '~=', p[1], p[3])
 
+def p_expression_logic(p):
+    '''
+    expression : expression AND expression
+               | expression OR expression
+               | NOT expression
+    '''
+    if len(p) == 4:
+        if p[2] == '&':
+            p[0] = ('logic', 'AND', p[1], p[3])
+        elif p[2] == '|':
+            p[0] = ('logic', 'OR', p[1], p[3])
+    elif len(p) == 3:
+        p[0] = ('logic', 'NOT', p[2])
+
+def p_statement_script(p):
+    '''
+    statement : SCRIPT
+    '''
+    p[0] = ('script', p[1])
+
 def p_expression_assign(p):
     '''
     expression : CHARCHAR ASSIGN expression
+               | CHARCHAR ASSIGN statement
     '''
     p[0] = ('assignment', p[1], p[3])
 
@@ -303,3 +324,5 @@ while True:
         continue
     ast = parser.parse(s)
     print(ast)
+
+# TODO: Logic Operators
