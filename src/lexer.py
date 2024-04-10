@@ -92,8 +92,8 @@ lexer = lex()
 precedence = (
     ('nonassoc', 'LESS', 'GREATER', 'LEQUAL', 'GREQUAL'),
     ('left', 'ADD', 'SUB'),
-    ('left', 'MULT', 'DIV'),
-    ('right', 'UNARY')
+    ('left', 'MULT', 'DIV')
+    # ('right', 'UNARY')
 )
 
 characters = {}
@@ -179,6 +179,7 @@ def p_statement_expr(p):
     statement : expression
     '''
     p[0] = p[1]
+    # print(p[0])
 
 def p_expression_binop(p):
     '''
@@ -242,14 +243,15 @@ def p_statement_script(p):
     '''
     statement : SCRIPT
     '''
-    p[0] = ('script', p[1])
+    p[0] = ('script', p[1]) # SCRIPT
 
 def p_expression_assign(p):
     '''
     expression : CHARCHAR ASSIGN expression
                | CHARCHAR ASSIGN statement
     '''
-    p[0] = ('assignment', p[1], p[3])
+    characters[p[1]] = p[3]
+
 
 def p_expression(p):
     '''
@@ -303,6 +305,10 @@ def p_factor(p):
         p[0] = ('unary', '+', p[2])
     elif p[1] == '-':
         p[0] = ('unary', '-', p[2])
+        
+# def p_statement_expr(p):
+#     'statement : expression'
+#     print(p[1])
 
 def p_error(p):
     if p:

@@ -1,5 +1,5 @@
 from ply.lex import lex
-from ply.yacc import yacc
+import ply.yacc as yacc
 import sys
 
 # --- Tokenizer
@@ -96,6 +96,8 @@ precedence = (
     ('right', 'UNARY')
 )
 
+characters = {}
+
 def p_statement_if(p):
     '''
     statement : IF LPAREN expression RPAREN ACTION statement CUT
@@ -172,11 +174,21 @@ def p_ex(p):
     '''
     p[0] = ('ex', p[2], p[4])
 
+def p_statement_assign(p):
+    '''statement : CHARCHAR ASSIGN expression
+                 | CHARCHAR INCR
+                 | CHARCHAR DECR'''
+    if p[2] == '<-':
+        characters[p[1]] = p[3]
+    elif p[2] == '++':
+        characters[p[1]] = characters[p[1]] + 1
+    elif p[2] == '--':
+        characters[p[1]] = characters[p[1]] - 1
+
 def p_statement_expr(p):
-    '''
-    statement : expression
-    '''
+    'statement : expression'
     p[0] = p[1]
+    print(p[0]) # Dialogue print token
 
 def p_expression_binop(p):
     '''
@@ -188,17 +200,20 @@ def p_expression_binop(p):
                | expression DECR
     '''
     if p[2] == '+':
-        p[0] = ('binop', '+', p[1], p[3])
+        p[0] = p[1] + p[3]
     elif p[2] == '-':
-        p[0] = ('binop', '-', p[1], p[3])
+        p[0] = p[1] - p[3]
     elif p[2] == '*':
-        p[0] = ('binop', '*', p[1], p[3])
+        p[0] = p[1] * p[3]
     elif p[2] == '/':
-        p[0] = ('binop', '/', p[1], p[3])
+        if p[3] == 0:
+            print("Erroar: Cannot divide by 0 idiot")
+        else:
+            p[0] = p[1] / p[3]
     elif p[2] == '++':
-        p[0] = ('unary', '++', p[1])
+        p[0] = p[1] + 1
     elif p[2] == '--':
-        p[0] = ('unary', '--', p[1])
+        p[0] = p[1] - 1
 
 def p_expression_comparison(p):
     '''
@@ -236,71 +251,31 @@ def p_expression_logic(p):
     elif len(p) == 3:
         p[0] = ('logic', 'NOT', p[2])
 
-def p_statement_script(p):
-    '''
-    statement : SCRIPT
-    '''
-    p[0] = ('script', p[1])
+def p_expression_unary(p):
+    '''expression : SUB expression %prec UNARY''' # %prec - Precedence token
+    p[0] = -p[2]
 
-def p_expression_assign(p):
-    '''
-    expression : CHARCHAR ASSIGN expression
-               | CHARCHAR ASSIGN statement
-    '''
-    p[0] = ('assignment', p[1], p[3])
+def p_expression_group(p):
+    '''expression : LPAREN expression RPAREN'''
+    p[0] = p[2]
 
-def p_expression(p):
-    '''
-    expression : term
-               | expression ADD term
-               | expression SUB term
-               | expression MULT term
-               | expression DIV term
-    '''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        if p[2] == '+':
-            p[0] = ('binop', '+', p[1], p[3])
-        elif p[2] == '-':
-            p[0] = ('binop', '-', p[1], p[3])
-        elif p[2] == '*':
-            p[0] = ('binop', '*', p[1], p[3])
-        elif p[2] == '/':
-            p[0] = ('binop', '/', p[1], p[3])
+def p_expression_number(p):
+    '''expression : NUMBER'''
+    p[0] = p[1]
 
-def p_term(p):
-    '''
-    term : factor
-         | term MULT factor
-         | term DIV factor
-    '''
-    if len(p) == 2:
-        p[0] = p[1]
-    elif p[2] == '*':
-        p[0] = ('binop', '*', p[1], p[3])
-    elif p[2] == '/':
-        p[0] = ('binop', '/', p[1], p[3])
+def p_expression_char(p):
+    '''expression : CHARCHAR'''
+    try:
+        p[0] = characters[p[1]]
+    except LookupError:
+        print("Undefined name '%s'" % p[1])
+        p[0] = 0
 
-def p_factor(p):
+def p_expression_script(p):
     '''
-    factor : NUMBER
-           | CHARCHAR
-           | LPAREN expression RPAREN
-           | ADD factor
-           | SUB factor
+    expression : SCRIPT
     '''
-    if len(p) == 2:
-        if isinstance(p[1], float):
-            p[0] = ('number', p[1])
-        else:
-            p[0] = ('CHARCHAR', p[1])
-    elif p[1] == '(':
-        p[0] = ['grouped', p[2]]
-    elif p[1] == '+':
-        p[0] = ('unary', '+', p[2])
-    elif p[1] == '-':
-        p[0] = ('unary', '-', p[2])
+    p[0] = p[1] # SCRIPT
 
 def p_error(p):
     if p:
@@ -309,7 +284,7 @@ def p_error(p):
         print("Syntax error: Unexpected end of input")
         
 # Build the parser
-parser = yacc()
+parser = yacc.yacc()
 
 while True:
     try:
@@ -318,5 +293,4 @@ while True:
         break
     if not s:
         continue
-    ast = parser.parse(s, lexer=lexer)
-    print(ast)
+    yacc.parse(s)
