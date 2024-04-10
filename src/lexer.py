@@ -311,5 +311,5 @@ while True:
         break
     if not s:
         continue
-    ast = parser.parse(s)
+    ast = parser.parse(s, lexer=lexer)
     print(ast)
