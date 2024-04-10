@@ -96,8 +96,6 @@ precedence = (
     ('right', 'UNARY')
 )
 
-characters = {}
-
 def p_statement_if(p):
     '''
     statement : IF LPAREN expression RPAREN ACTION statement CUT
