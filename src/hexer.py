@@ -225,17 +225,17 @@ def p_expression_comparison(p):
                | expression ISNOT expression
     '''
     if p[2] == '<':
-        p[0] = ('comparison', '<', p[1], p[3])
+        p[0] = p[1] < p[3]
     elif p[2] == '>':
-        p[0] = ('comparison', '>', p[1], p[3])
+        p[0] = p[1] > p[3]
     elif p[2] == '<=':
-        p[0] = ('comparison', '<=', p[1], p[3])
+        p[0] = p[1] <= p[3]
     elif p[2] == '>=':
-        p[0] = ('comparison', '>=', p[1], p[3])
+        p[0] = p[1] >= p[3]
     elif p[2] == '=?':
-        p[0] = ('comparison', '=?', p[1], p[3])
+        p[0] = p[1] == p[3]
     elif p[2] == '~=':
-        p[0] = ('comparison', '~=', p[1], p[3])
+        p[0] = p[1] != p[3]
 
 def p_expression_logic(p):
     '''
@@ -293,4 +293,4 @@ while True:
         break
     if not s:
         continue
-    yacc.parse(s)
+    yacc.parse(s, lexer=lexer)
