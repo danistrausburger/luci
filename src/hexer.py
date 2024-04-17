@@ -105,11 +105,25 @@ def p_statement_if(p):
               | IF LPAREN expression RPAREN ACTION statement CUT opt_el
     '''
     if len(p) == 8: # If it's just an if
-        p[0] = ('if', p[3], p[6])
+        # p[0] = ('if', p[3], p[6])
+        if p[3] == True:
+            p[0] = p[6]
+        else:
+            print("false.")
     elif len(p) == 9: # If else
-        p[0] = ('if_el', p[3], p[6], p[8])
+        if p[3] == True:
+            p[0] = p[6]
+        else:
+            if p[8] is not None:
+                p[0] = p[8]
+            
+        
     else: 
-        p[0] = ('if_elif_el', p[3], p[6], p[8], p[9])
+        # p[0] = ('if_elif_el', p[3], p[6], p[8], p[9])
+        if p[3] == True:
+            p[0] = p[6]
+        elif p[8] == True:
+            pass
 
 def p_elif_statements(p): # Won't print out elif statements after the first
     '''
@@ -127,7 +141,9 @@ def p_elif_statement(p):
     '''
     elif_statement : ELIF LPAREN expression RPAREN ACTION expression CUT
     '''
-    p[0] = ('elif', p[3], p[6])
+    # p[0] = ('elif', p[3], p[6])
+    if p[3] == True:
+        p[0] = p[6]
 
 def p_opt_el(p):
     '''
@@ -135,7 +151,8 @@ def p_opt_el(p):
            |
     '''
     if len(p) == 5:
-        p[0] = ('else', p[3])
+        # p[0] = ('else', p[3])
+        p[0] = p[3]
     else:
         p[0] = None
 
