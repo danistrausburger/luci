@@ -148,7 +148,6 @@ def p_statement_deal(p):
     statement : DEAL LPAREN expression RPAREN ACTION ex_list CUT
     '''
     p[0] = ('deal', p[3], p[6])
-    print(p[0])
 
 def p_ex_list(p):
     '''
@@ -263,6 +262,20 @@ def evaluate_expression(expression):
                 return evaluate_expression(expression[2])
             else:
                 return None
+            
+        elif expression[0] == 'deal':
+            condition = evaluate_expression(expression[1])
+            cases = expression[2]
+            res = None
+            for case in cases:
+                case_condition = evaluate_expression(case[1])
+                if case_condition == condition:
+                    res = evaluate_expression(case[2])
+                    break
+            if res is None and len(expression) > 3:
+                res = evaluate_expression(expression[3])
+            return res
+        
         elif expression[0] == 'scene': # Fix: Goes 1 above for some reason
             condition = expression[1]
             action = expression[2]
