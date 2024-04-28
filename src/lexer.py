@@ -97,32 +97,27 @@ characters = {}
 
 def p_statement_if(p): # 7 10 9
     '''
-    statement : IF LPAREN expression RPAREN ACTION statement CUT
+    statement : IF LPAREN expression RPAREN ACTION statement CUT opt_el
               | IF LPAREN expression RPAREN ACTION statement CUT elif_statements opt_el
-              | IF LPAREN expression RPAREN ACTION statement CUT opt_el
     '''
-    if len(p) == 8: # If it's just an if
-        p[0] = ('if', p[3], p[6], None)
-    elif len(p) == 9: # If else
-        p[0] = ('if_el', p[3], p[6], p[8])
+    if len(p) == 9: # If it's just an if
+        p[0] = ('if', p[3], p[6], None, p[8])
     else: 
-        p[0] = ('if_elif_el', p[3], p[6], p[8], p[9])
+        p[0] = ('if', p[3], p[6], p[8], p[9])
 
-def p_elif_statements(p): # Won't print out elif statements after the first
+def p_elif_statements(p):
     '''
     elif_statements : elif_statement
                     | elif_statements elif_statement
     '''
     if len(p) == 2: 
         p[0] = [p[1]]
-    # elif len(p) == 3:
-    #     p[0] = []
     else:  # Multiple elif statements
         p[0] = p[1] + [p[2]]
 
 def p_elif_statement(p):
     '''
-    elif_statement : ELIF LPAREN expression RPAREN ACTION expression CUT
+    elif_statement : ELIF LPAREN expression RPAREN ACTION statement CUT
     '''
     p[0] = ('elif', p[3], p[6])
 
@@ -132,7 +127,7 @@ def p_opt_el(p):
            |
     '''
     if len(p) == 5:
-        p[0] = ('else', p[3])
+        p[0] = ('el', p[3])
     else:
         p[0] = None
 
@@ -153,7 +148,6 @@ def p_statement_deal(p):
     statement : DEAL LPAREN expression RPAREN ACTION ex_list CUT
     '''
     p[0] = ('deal', p[3], p[6])
-    print(p[0])
 
 def p_ex_list(p):
     '''
@@ -177,21 +171,21 @@ def p_statement_expr(p):
     '''
     p[0] = p[1]
 
+def p_expression_unary(p):
+    '''
+    expression : expression INCR
+               | expression DECR
+    '''
+    p[0] = ('unary', p[2], p[1])
+
 def p_expression_binop(p):
     '''
     expression : expression ADD expression
                | expression SUB expression
                | expression MULT expression
                | expression DIV expression
-               | expression INCR
-               | expression DECR
     '''
-    if p[2] == '++':
-        p[0] = ('unary', '++', p[1])
-    elif p[2] == '--':
-        p[0] = ('unary', '--', p[1])
-    else:
-        p[0] = ('binop', p[2], p[1], p[3])
+    p[0] = ('binop', p[2], p[1], p[3])
 
 def p_expression_comparison(p):
     '''
@@ -218,7 +212,7 @@ def p_expression_logic(p):
     elif len(p) == 3:
         p[0] = ('logic', 'NOT', p[2])
 
-def p_statement_script(p):
+def p_statement_script(p): # Hold please *Waiting music*
     '''
     statement : SCRIPT
     '''
@@ -227,49 +221,16 @@ def p_statement_script(p):
 def p_expression_assign(p):
     '''
     expression : CHARCHAR ASSIGN expression
+               | CHARCHAR ASSIGN SCRIPT
     '''
     p[0] = ('assign', p[1], p[3])
 
-
 def p_expression(p):
     '''
-    expression : term
-               | expression ADD term
-               | expression SUB term
-               | expression MULT term
-               | expression DIV term
-    '''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        if p[2] == '+':
-            p[0] = ('binop', '+', p[1], p[3])
-        elif p[2] == '-':
-            p[0] = ('binop', '-', p[1], p[3])
-        elif p[2] == '*':
-            p[0] = ('binop', '*', p[1], p[3])
-        elif p[2] == '/':
-            p[0] = ('binop', '/', p[1], p[3])
-
-def p_term(p):
-    '''
-    term : factor
-         | term MULT factor
-         | term DIV factor
-    '''
-    if len(p) == 2:
-        p[0] = p[1]
-    elif p[2] == '*':
-        p[0] = ('binop', '*', p[1], p[3])
-    elif p[2] == '/':
-        p[0] = ('binop', '/', p[1], p[3])
-
-def p_factor(p):
-    '''
-    factor : NUMBER
-           | negative_number
-           | CHARCHAR
-           | LPAREN expression RPAREN
+    expression : NUMBER
+               | negative_number
+               | CHARCHAR
+               | LPAREN expression RPAREN
     '''
     if len(p) == 2:
         if isinstance(p[1], float):
@@ -296,21 +257,60 @@ parser = yacc()
 
 def evaluate_expression(expression):
     if isinstance(expression, tuple):
+        # Evaluate If statements
         if expression[0] == 'if':
             condition = evaluate_expression(expression[1])
             if condition:
                 return evaluate_expression(expression[2])
+            elif expression[4] is not None and expression[3] is None: # el statement, No elif statements
+                return evaluate_expression(expression[4][1])
+            elif expression[3] is not None: # 1 or more elif statements
+                for case in expression[3]:
+                    condition = evaluate_expression(case[1])
+                    if condition:
+                        return evaluate_expression(case[2])
+                if expression[4] is not None: # Evaluate el statement if all elif statements are false
+                    return evaluate_expression(expression[4][1])
             else:
-                return None
-        elif expression[0] == 'scene': # Fix: Goes 1 above for some reason
+                return None # Nothing could be done, RIP
+            
+        # Evaluate Switch cases
+        elif expression[0] == 'deal':
+            condition = evaluate_expression(expression[1])
+            cases = expression[2]
+            result = None
+            for case in cases:
+                case_condition = evaluate_expression(case[1])
+                if case_condition == condition:
+                    result = evaluate_expression(case[2])
+                    break
+            if result is None and len(expression) > 3:
+                result = evaluate_expression(expression[3])
+            return result
+        
+        # Evaluate Scene loop
+        elif expression[0] == 'scene': 
             condition = expression[1]
             action = expression[2]
             result = None
             while evaluate_expression(condition):
                 result = evaluate_expression(action)
             return result
-        
+
+        # Evaluate From_to loop
+        elif expression[0] == 'from_to':
+            start_cond = evaluate_expression(expression[1])
+            end_cond = evaluate_expression(expression[2])
+            action = expression[3]
+            result = None
+            for i in range(int(start_cond), int(end_cond)+1):
+                result = evaluate_expression(action)
+            return result
+
+        # Evaluate Basic operations
         elif expression[0] == 'number':
+            return expression[1]
+        elif expression[0] == 'script':
             return expression[1]
         elif expression[0] == 'CHARCHAR':
             var_name = expression[1]
@@ -324,6 +324,8 @@ def evaluate_expression(expression):
                 return evaluate_expression(expression[2]) + 1
             elif expression[1] == '--':
                 return evaluate_expression(expression[2]) - 1
+            
+        # Evaluate Binary operations
         elif expression[0] == 'binop':
             op = expression[1]
             left = evaluate_expression(expression[2])
@@ -336,6 +338,8 @@ def evaluate_expression(expression):
                 return mul(left, right)
             elif op == '/':
                 return truediv(left, right)
+            
+        # Evaluate Comparisons
         elif expression[0] == 'comparison':
             op = expression[1]
             left = evaluate_expression(expression[2])
@@ -352,6 +356,8 @@ def evaluate_expression(expression):
                 return left == right
             elif op == '~=':
                 return left != right
+            
+        # Evaluate Logic expressions
         elif expression[0] == 'logic':
             if len(expression) == 4:
                 if expression[1] == 'AND':
@@ -361,6 +367,8 @@ def evaluate_expression(expression):
             elif len(expression) == 3:
                 if expression[1] == 'NOT':
                     return not evaluate_expression(expression[2])
+                
+        # Evaluate Assignments
         elif expression[0] == 'assign':
             var_name = expression[1]
             expr_ast = expression[2]
@@ -370,6 +378,8 @@ def evaluate_expression(expression):
             return result
     elif isinstance(expression, str):
         return expression
+    
+    # Evaluate Grouped Expressions
     elif isinstance(expression, list) and expression[0] == 'grouped':
         return evaluate_expression(expression[1])
     else:
