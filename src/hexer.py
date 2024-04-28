@@ -266,23 +266,33 @@ def evaluate_expression(expression):
         elif expression[0] == 'deal':
             condition = evaluate_expression(expression[1])
             cases = expression[2]
-            res = None
+            result = None
             for case in cases:
                 case_condition = evaluate_expression(case[1])
                 if case_condition == condition:
-                    res = evaluate_expression(case[2])
+                    result = evaluate_expression(case[2])
                     break
-            if res is None and len(expression) > 3:
-                res = evaluate_expression(expression[3])
-            return res
+            if result is None and len(expression) > 3:
+                result = evaluate_expression(expression[3])
+            return result
         
-        elif expression[0] == 'scene': # Fix: Goes 1 above for some reason
+        elif expression[0] == 'scene': 
             condition = expression[1]
             action = expression[2]
             result = None
             while evaluate_expression(condition):
                 result = evaluate_expression(action)
             return result
+
+        elif expression[0] == 'from_to':
+            start_cond = evaluate_expression(expression[1])
+            end_cond = evaluate_expression(expression[2])
+            action = expression[3]
+            result = None
+            for i in range(int(start_cond), int(end_cond)+1):
+                result = evaluate_expression(action)
+            return result
+
         
         elif expression[0] == 'number':
             return expression[1]
