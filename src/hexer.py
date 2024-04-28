@@ -58,7 +58,6 @@ t_RPAREN = r'\)'
 def t_SCRIPT(t):
     r'\"([^\\"]|\\")*\"'
     t.value = t.value[1:-1]  # Remove double quotes from the value
-    print("String:", t.value)
     return t
 
 # HEY CHAR Rule for variable CHARCHARs
@@ -221,6 +220,7 @@ def p_statement_script(p): # Hold please *Waiting music*
 def p_expression_assign(p):
     '''
     expression : CHARCHAR ASSIGN expression
+               | CHARCHAR ASSIGN SCRIPT
     '''
     p[0] = ('assign', p[1], p[3])
 
@@ -285,6 +285,8 @@ def evaluate_expression(expression):
             return result
         
         elif expression[0] == 'number':
+            return expression[1]
+        elif expression[0] == 'script':
             return expression[1]
         elif expression[0] == 'CHARCHAR':
             var_name = expression[1]
