@@ -171,13 +171,6 @@ def p_statement_expr(p):
     '''
     p[0] = p[1]
 
-def p_expression_unary(p):
-    '''
-    expression : expression INCR
-               | expression DECR
-    '''
-    p[0] = ('unary', p[2], p[1])
-
 def p_expression_binop(p):
     '''
     expression : expression ADD expression
@@ -222,8 +215,13 @@ def p_expression_assign(p):
     '''
     expression : CHARCHAR ASSIGN expression
                | CHARCHAR ASSIGN SCRIPT
+               | CHARCHAR INCR
+               | CHARCHAR DECR
     '''
-    p[0] = ('assign', p[1], p[3])
+    if len(p) == 4:
+        p[0] = ('assign', p[1], p[3])
+    else:
+        p[0] = ('assign', p[1], p[2])
 
 def p_expression(p):
     '''
@@ -319,11 +317,6 @@ def evaluate_expression(expression):
             else:
                 print(f"Error: Variable '{var_name}' is undefined")
                 return None
-        elif expression[0] == 'unary': # Fix
-            if expression[1] == '++':
-                return evaluate_expression(expression[2]) + 1
-            elif expression[1] == '--':
-                return evaluate_expression(expression[2]) - 1
             
         # Evaluate Binary operations
         elif expression[0] == 'binop':
@@ -372,10 +365,17 @@ def evaluate_expression(expression):
         elif expression[0] == 'assign':
             var_name = expression[1]
             expr_ast = expression[2]
-            result = evaluate_expression(expr_ast)
-            if result is not None: # Only update if exists
-                characters[var_name] = result
-            return result
+            if expr_ast == '++':
+                characters[var_name] += 1
+                return characters[var_name]
+            elif expr_ast == '--':
+                characters[var_name] -= 1
+                return characters[var_name]
+            else:
+                result = evaluate_expression(expr_ast)
+                if result is not None: # Only update if exists
+                    characters[var_name] = result
+                return result
     elif isinstance(expression, str):
         return expression
     
