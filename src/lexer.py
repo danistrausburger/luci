@@ -17,8 +17,6 @@ kwords = {
     'cut' : 'CUT',
     'create' : 'CREATE',
     'tartarus' : 'TARTARUS',
-    'truth' : 'TRUTH',
-    'lie' : 'LIE',
     'die' : 'DIE',
     'retaliate' : 'RETALIATE',
     'gate' : 'GATE'
@@ -258,14 +256,14 @@ def evaluate_expression(expression):
         # Evaluate If statements
         if expression[0] == 'if':
             condition = evaluate_expression(expression[1])
-            if condition:
+            if condition == "Truth":
                 return evaluate_expression(expression[2])
             elif expression[4] is not None and expression[3] is None: # el statement, No elif statements
                 return evaluate_expression(expression[4][1])
             elif expression[3] is not None: # 1 or more elif statements
                 for case in expression[3]:
                     condition = evaluate_expression(case[1])
-                    if condition:
+                    if condition == "Truth":
                         return evaluate_expression(case[2])
                 if expression[4] is not None: # Evaluate el statement if all elif statements are false
                     return evaluate_expression(expression[4][1])
@@ -291,7 +289,7 @@ def evaluate_expression(expression):
             condition = expression[1]
             action = expression[2]
             result = None
-            while evaluate_expression(condition):
+            while evaluate_expression(condition) == "Truth":
                 result = evaluate_expression(action)
             return result
 
@@ -337,29 +335,48 @@ def evaluate_expression(expression):
             op = expression[1]
             left = evaluate_expression(expression[2])
             right = evaluate_expression(expression[3])
+            res = None
             if op == '<':
-                return left < right
+                res = left < right
             elif op == '>':
-                return left > right
+                res = left > right
             elif op == '<=':
-                return left <= right
+                res = left <= right
             elif op == '>=':
-                return left >= right
+                res = left >= right
             elif op == '=?':
-                return left == right
-            elif op == '~=':
-                return left != right
+                res = left == right
+            elif op == '~=': # IsNot
+                res = left != right
+            if res == True:
+                return "Truth"
+            else:
+                return "Lie"
             
         # Evaluate Logic expressions
         elif expression[0] == 'logic':
             if len(expression) == 4:
-                if expression[1] == 'AND':
-                    return evaluate_expression(expression[2]) and evaluate_expression(expression[3])
-                elif expression[1] == 'OR':
-                    return evaluate_expression(expression[2]) or evaluate_expression(expression[3])
+                op = expression[1]
+                left = evaluate_expression(expression[2])
+                right = evaluate_expression(expression[3])
+                if op == 'AND':
+                    if left == "Truth" and right == "Truth":
+                        return "Truth"
+                    else:
+                        return "Lie"
+                elif op == 'OR':
+                    if left == "Truth" or right == "Truth":
+                        return "Truth"
+                    else:
+                        return "Lie"
             elif len(expression) == 3:
-                if expression[1] == 'NOT':
-                    return not evaluate_expression(expression[2])
+                op = expression[1]
+                left = evaluate_expression(expression[2])
+                if op == 'NOT':
+                    if left == "Truth":
+                        return "Lie"
+                    else:
+                        return "Truth"
                 
         # Evaluate Assignments
         elif expression[0] == 'assign':
