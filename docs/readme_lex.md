@@ -13,9 +13,13 @@ The src folder contains one subfolder: a ply folder that contains the generator 
 
 To use, simply open a new bash terminal and type the following:
 
-python lexer.py < ../example/yourfile
+python ./lexer.py
 
-Replace "yourfile" with the name of the file you wish to pass into the lexer.
+After entering that, you will be prompted to enter a file name, which would look like:
+
+ ../example/yourfile
+
+Replace "yourfile" with the name of the file you wish to pass into the program. Change the file path as needed, the path above works for any tests provided in our example file.
 
 Four example files are provided in the example folder.
 You may have anything in the inputted file, including but not limited to numbers, operators, conditionals, and characters.

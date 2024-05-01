@@ -11,9 +11,19 @@ The docs folder contains the readme file, as well as the presentation slides for
 The example folder contains example files that can be used to test the lexer.
 The src folder contains one subfolder: a ply folder that contains the generator files. The src folder also contains the lexer.py file, which holds the Luci lexer/parser.
 
-To use, simply open the file and run it. A prompt will appear in the command line, and you can enter your desired input to be tokenized then parsed. An AST will be returned, generated from your input.
+To use, simply open a new bash terminal and type the following:
+
+python ./lexer.py
+
+After entering that, you will be prompted to enter a file name, which would look like:
+
+ ../example/yourfile
+
+Replace "yourfile" with the name of the file you wish to pass into the program. Change the file path as needed, the path above works for any tests provided in our example file.
 
 Example files are included in the example folder, the contents can be used to test the parser.
+
+Custom test cases can also be created and passed into the program. Remember when creating tests to follow our syntax, specifically remembering that for if, switch, while, and for code blocks, keep everything on one line.
 
 CREDITS
 
