@@ -402,16 +402,22 @@ def evaluate_expression(expression):
     else:
         return expression
 
-while True:
-    try:
-        s = input('expr > ')
-    except EOFError:
-        break
-    if not s:
-        continue
-    try:
-        ast = parser.parse(s, lexer=lexer)
-        result = evaluate_expression(ast)
-        print(result)
-    except Exception as e:
-        print(f"Error: {e}")
+file_name = input("Enter the file name: ")
+try:
+    # Open sesame
+    with open(file_name, 'r') as file:
+        lines = file.readlines() # Literacy
+
+        # Iterate over each line
+        for line in lines:
+            if not line.strip(): # Skip empty lines
+                continue
+            
+            try: # Parse and evaluate
+                ast = parser.parse(line, lexer=lexer)
+                result = evaluate_expression(ast)
+                print(f"{line.strip()} \nResult: {result}") # Make it look nice
+            except Exception as e:
+                print(f"Syntax error: {e}") # Erroar
+except FileNotFoundError:
+    print(f"Error: File '{file_name}' not found.")
