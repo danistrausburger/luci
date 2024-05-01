@@ -13,6 +13,8 @@ The src folder contains one subfolder: a ply folder that contains the generator 
 
 To use, simply open a new bash terminal and type the following:
 
+cd src
+
 python ./lexer.py
 
 After entering that, you will be prompted to enter a file name, which would look like:
@@ -23,6 +25,8 @@ Replace "yourfile" with the name of the file you wish to pass into the program. 
 
 Four example files are provided in the example folder.
 You may have anything in the inputted file, including but not limited to numbers, operators, conditionals, and characters.
+
+Remember when creating input files to follow the Luci syntax.
 
 CREDITS
 

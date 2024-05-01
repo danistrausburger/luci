@@ -203,6 +203,12 @@ def p_expression_logic(p):
     elif len(p) == 3:
         p[0] = ('logic', 'NOT', p[2])
 
+def p_expression_tartarus(p):
+    '''
+    expression : TARTARUS
+    '''
+    p[0] = ('tartarus', None)
+
 def p_statement_script(p): # Hold please *Waiting music*
     '''
     statement : SCRIPT
@@ -390,9 +396,13 @@ def evaluate_expression(expression):
                 return characters[var_name]
             else:
                 result = evaluate_expression(expr_ast)
-                if result is not None: # Only update if exists
+                if (result is not None or (expr_ast[0] == 'tartarus')): # Only update if exists
                     characters[var_name] = result
                 return result
+            
+        elif expression[0] == 'tartarus':
+            return None
+        
     elif isinstance(expression, str):
         return expression
     

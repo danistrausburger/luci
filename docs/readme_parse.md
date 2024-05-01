@@ -13,6 +13,8 @@ The src folder contains one subfolder: a ply folder that contains the generator 
 
 To use, simply open a new bash terminal and type the following:
 
+cd src
+
 python ./lexer.py
 
 After entering that, you will be prompted to enter a file name, which would look like:
