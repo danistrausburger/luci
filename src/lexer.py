@@ -277,7 +277,7 @@ def evaluate_expression(expression):
             result = None
             for case in cases:
                 case_condition = evaluate_expression(case[1])
-                if case_condition == condition:
+                if ((case_condition == condition) | (case_condition == True)):
                     result = evaluate_expression(case[2])
                     break
             if result is None and len(expression) > 3:
