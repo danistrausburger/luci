@@ -15,7 +15,7 @@ Luci follows a simple syntax, allowing developers to write expressive and effici
 - **Comments**: Single-line comments for adding explanatory notes to code.
 
 ## Example Code
-For example, ex4.note contains:
+For example, ex3.note in the [examples](../example) folder contains:
 ```
 x <- 3.3 # Variable assignments
 y <- 4.6
