@@ -1,4 +1,4 @@
-PA3 - Luci Parser Project
+# PA3 - Luci Parser Project
 
 Designing and building an interpreter for a programming language. This program is specifically the parsing portion of the interpreter. Our language is called Luci.
 
@@ -27,7 +27,7 @@ Example files are included in the example folder, the contents can be used to te
 
 Custom test cases can also be created and passed into the program. Remember when creating tests to follow our syntax, specifically remembering that for if, switch, while, and for code blocks, keep everything on one line.
 
-CREDITS
+# CREDITS
 
 This project uses the PLY python lexical analyzer generator. The link to the page is below.
 https://www.dabeaz.com/ply/
