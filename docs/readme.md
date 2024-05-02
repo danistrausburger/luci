@@ -2,7 +2,7 @@
 
 Designing and building an interpreter for a programming language. Our language is named Luci.
 
-Project part-specific readme files are available for the [Lexer](docs/readme_lex.md) and the [Parser](docs/readme_parse.md).
+Project part-specific readme files are available for the [Lexer](readme_lex.md) and the [Parser](readme_parse.md).
 
 ## Syntax Overview
 
