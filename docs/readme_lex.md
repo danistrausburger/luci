@@ -1,4 +1,4 @@
-PA2 - Luci Lexer Project
+# PA2 - Luci Lexer Project
 
 Designing and building an interpreter for a programming language. This program is specifically the lexer analysis portion of the interpreter. Our language is called Luci.
 
@@ -28,7 +28,7 @@ You may have anything in the inputted file, including but not limited to numbers
 
 Remember when creating input files to follow the Luci syntax.
 
-CREDITS
+# CREDITS
 
 This project uses the PLY python lexical analyzer generator. The link to the page is below.
 https://www.dabeaz.com/ply/
