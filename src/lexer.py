@@ -15,11 +15,11 @@ kwords = {
     'ex' : 'EX',
     'action' : 'ACTION',
     'cut' : 'CUT',
-    'create' : 'CREATE',
+    # 'create' : 'CREATE',
     'tartarus' : 'TARTARUS',
-    'die' : 'DIE',
-    'retaliate' : 'RETALIATE',
-    'gate' : 'GATE'
+    # 'die' : 'DIE',
+    # 'retaliate' : 'RETALIATE',
+    # 'gate' : 'GATE'
 }
 
 # Token Types
@@ -32,7 +32,7 @@ tokens = ('EOF', 'INCR', 'DECR', 'ADD', 'SUB', 'MULT', 'DIV',
 t_ignore = ' \t'
 
 # Token matching rules are written as regexs
-t_EOF = r'EOF'
+# t_EOF = r'EOF'
 t_INCR = r'\+\+'
 t_DECR = r'\-\-'
 t_ADD = r'\+'
@@ -84,6 +84,7 @@ def t_error(t):
 # Build the lexer object
 lexer = lex()
 
+# Precedence for operations
 precedence = (
     ('nonassoc', 'LESS', 'GREATER', 'LEQUAL', 'GREQUAL'),
     ('left', 'ADD', 'SUB'),
@@ -95,8 +96,8 @@ characters = {}
 
 def p_statement_if(p): # 7 10 9
     '''
-    statement : IF LPAREN expression RPAREN ACTION statement CUT opt_el
-              | IF LPAREN expression RPAREN ACTION statement CUT elif_statements opt_el
+    expression : IF LPAREN expression RPAREN ACTION expression CUT opt_el
+              | IF LPAREN expression RPAREN ACTION expression CUT elif_statements opt_el
     '''
     if len(p) == 9: # If it's just an if
         p[0] = ('if', p[3], p[6], None, p[8])
@@ -115,13 +116,13 @@ def p_elif_statements(p):
 
 def p_elif_statement(p):
     '''
-    elif_statement : ELIF LPAREN expression RPAREN ACTION statement CUT
+    elif_statement : ELIF LPAREN expression RPAREN ACTION expression CUT
     '''
     p[0] = ('elif', p[3], p[6])
 
 def p_opt_el(p):
     '''
-    opt_el : EL ACTION statement CUT
+    opt_el : EL ACTION expression CUT
            |
     '''
     if len(p) == 5:
@@ -131,19 +132,19 @@ def p_opt_el(p):
 
 def p_statement_while(p):
     '''
-    statement : SCENE LPAREN expression RPAREN ACTION statement CUT
+    expression : SCENE LPAREN expression RPAREN ACTION expression CUT
     '''
     p[0] = ('scene', p[3], p[6])
 
 def p_statement_for(p):
     '''
-    statement : FROM LPAREN expression RPAREN TO LPAREN expression RPAREN ACTION statement CUT 
+    expression : FROM LPAREN expression RPAREN TO LPAREN expression RPAREN ACTION expression CUT 
     '''
     p[0] = ('from_to', p[3], p[7], p[10])
     
 def p_statement_deal(p):
     '''
-    statement : DEAL LPAREN expression RPAREN ACTION ex_list CUT
+    expression : DEAL LPAREN expression RPAREN ACTION ex_list CUT
     '''
     p[0] = ('deal', p[3], p[6])
 
@@ -159,15 +160,15 @@ def p_ex_list(p):
 
 def p_ex(p):
     '''
-    ex : EX expression ACTION statement CUT
+    ex : EX expression ACTION expression CUT
     '''
     p[0] = ('ex', p[2], p[4])
 
-def p_statement_expr(p):
-    '''
-    statement : expression
-    '''
-    p[0] = p[1]
+# def p_statement_expr(p):
+#     '''
+#     statement : expression
+#     '''
+#     p[0] = p[1]
 
 def p_expression_binop(p):
     '''
@@ -202,7 +203,7 @@ def p_expression_logic(p):
             p[0] = ('logic', 'OR', p[1], p[3])
     elif len(p) == 3:
         p[0] = ('logic', 'NOT', p[2])
-
+        
 def p_expression_tartarus(p):
     '''
     expression : TARTARUS
@@ -211,14 +212,13 @@ def p_expression_tartarus(p):
 
 def p_statement_script(p): # Hold please *Waiting music*
     '''
-    statement : SCRIPT
+    expression : SCRIPT
     '''
     p[0] = ('script', p[1]) # SCRIPT
 
 def p_expression_assign(p):
     '''
     expression : CHARCHAR ASSIGN expression
-               | CHARCHAR ASSIGN SCRIPT
                | CHARCHAR INCR
                | CHARCHAR DECR
     '''
@@ -257,6 +257,7 @@ def p_error(p):
 # Build the parser
 parser = yacc()
 
+# Evaluation function
 def evaluate_expression(expression):
     if isinstance(expression, tuple):
         # Evaluate If statements
@@ -283,7 +284,7 @@ def evaluate_expression(expression):
             result = None
             for case in cases:
                 case_condition = evaluate_expression(case[1])
-                if ((case_condition == condition) | (case_condition == True)):
+                if case_condition == condition:
                     result = evaluate_expression(case[2])
                     break
             if result is None and len(expression) > 3:
@@ -400,6 +401,7 @@ def evaluate_expression(expression):
                     characters[var_name] = result
                 return result
             
+        # Evaluate null
         elif expression[0] == 'tartarus':
             return None
         
@@ -431,3 +433,4 @@ try:
                 print(f"Syntax error: {e}") # Erroar
 except FileNotFoundError:
     print(f"Error: File '{file_name}' not found.")
+
